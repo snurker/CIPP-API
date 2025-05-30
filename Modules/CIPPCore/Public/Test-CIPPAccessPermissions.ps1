@@ -35,12 +35,12 @@ function Test-CIPPAccessPermissions {
             try {
                 Disable-AzContextAutosave -Scope Process | Out-Null
                 $null = Connect-AzAccount -Identity
-                $SubscriptionId = $ENV:WEBSITE_OWNER_NAME -split '\+' | Select-Object -First 1
+                $SubscriptionId = $env:WEBSITE_OWNER_NAME -split '\+' | Select-Object -First 1
                 $null = Set-AzContext -SubscriptionId $SubscriptionId
 
-                $KV = $ENV:WEBSITE_DEPLOYMENT_ID
+                $KV = $env:WEBSITE_DEPLOYMENT_ID
                 $KeyVaultRefresh = Get-AzKeyVaultSecret -VaultName $kv -Name 'RefreshToken' -AsPlainText
-                if ($ENV:RefreshToken -ne $KeyVaultRefresh) {
+                if ($env:RefreshToken -ne $KeyVaultRefresh) {
                     $Success = $false
                     $ErrorMessages.Add('Your refresh token does not match key vault, wait 30 minutes for the function app to update.') | Out-Null
                 } else {
@@ -133,7 +133,7 @@ function Test-CIPPAccessPermissions {
         $ApplicationToken = Get-GraphToken -returnRefresh $true -SkipCache $true -AsApp $true
         $ApplicationTokenDetails = Read-JwtAccessDetails -Token $ApplicationToken.access_token -erroraction SilentlyContinue | Select-Object
 
-        $LastUpdate = [DateTime]::SpecifyKind($GraphPermissions.Timestamp.DateTime, [DateTimeKind]::Utc)
+        $LastUpdate = [DateTime]::SpecifyKind($GraphPermissions.Timestamp.ToString('yyyy-MM-ddTHH:mm:ssZ'), [DateTimeKind]::Utc)
         $CpvTable = Get-CippTable -tablename 'cpvtenants'
         $CpvRefresh = Get-CippAzDataTableEntity @CpvTable -Filter "PartitionKey eq 'Tenant'"
         $TenantList = Get-Tenants -IncludeErrors | Where-Object { $_.customerId -ne $env:TenantID -and $_.Excluded -eq $false }
